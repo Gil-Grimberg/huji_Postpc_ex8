@@ -8,6 +8,7 @@ import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.work.Data;
+import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkInfo;
 import androidx.work.WorkManager;
 
@@ -15,7 +16,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.EditText;
+import android.widget.Toast;
 
+import com.example.postpc_ex8.workers.RootsFinderWorker;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.List;
@@ -31,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        workManager = WorkManager.getInstance(this);
         if (holder == null) {
 //            holder = new TodoItemsHolderImpl();
             holder = findRootsApp.getInstance().getDataBase(); // replace the last row with this??
@@ -48,14 +51,23 @@ public class MainActivity extends AppCompatActivity {
         findRootsButton.setOnClickListener(v->{
             // todo: check validity of the number
             // than create a new worker and RootsFinder
-            RootsFinder finder = new RootsFinder(100,"preffix try","suffix try",100);
+            Long number;
+            try{
+                number = Long.parseLong(inputNumber.getText().toString());
+            }
+            catch (Exception e)
+            {
+                Toast.makeText(this,"Please enter a valid number",Toast.LENGTH_SHORT).show();
+                return;
+
+            }
+            RootsFinder finder = new RootsFinder(number,"Calculating roots for",String.valueOf(number),0L);
             holder.addFinder(finder);
+
             adapter.setRootsFinders(holder.getCurrentFinders());
         });
-
-        try {
-
-
+//        workManager.cancelAllWorkByTag("interesting");
+//        workManager.pruneWork();
         LiveData<List<WorkInfo>> liveData = workManager.getWorkInfosByTagLiveData("interesting");
         liveData.observe(this, new Observer<List<WorkInfo>>() {
             @Override
@@ -67,29 +79,29 @@ public class MainActivity extends AppCompatActivity {
                     Data progress = workInfo.getProgress();
                     for (RootsFinder finder:holder.getCurrentFinders())
                     {
-                        if (finder.getId()==workerId)
+                        if (finder.getId().equals(workerId))
                         {
-                            int total = progress.getInt("progress", -1);
+                            Long total = progress.getLong("progress", 100);
                             if (total != -1) {
                                 finder.setProgress(total);
+
                                 //todo: maybe delete the finder from the holder and create a new one with updated params
                             }
-                            if (workInfo.getState() == WorkInfo.State.SUCCEEDED) {
-                                finder.setProgress(100);
+                            if (workInfo.getState().equals(WorkInfo.State.SUCCEEDED)) {
+                                finder.setProgress(100L);
                                 String output = workInfo.getOutputData().getString("output");
                                 finder.preffix = "Roots for " + finder.getNumber() + " are: ";
                                 finder.suffix = output;
                             }
+                            holder.updateFinder(finder);
+                            adapter.setRootsFinders(holder.getCurrentFinders());
 
                         }
                     }
                 }
 
             }
-        });}
-        catch (Exception e)
-        {
-            Log.d("1","no workers");
-        }
+        });
+
     }
 }

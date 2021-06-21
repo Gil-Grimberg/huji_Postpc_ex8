@@ -77,7 +77,7 @@ class findRootsAdapter extends RecyclerView.Adapter<findRootsViewHolder> {
         RootsFinder finder = _findRootsArrayList.getCurrentFinders().get(position);
         holder.preffix.setText(finder.getPreffix());
         holder.suffix.setText(finder.getSuffix());
-        holder.progressBar.setProgress(finder.getProgress()); //todo: set the appropriate number
+        holder.progressBar.setProgress(finder.getProgress().intValue()); //todo: set the appropriate number
         // if in progress disable deleteButton and enable cancelButton
         if (finder.getProgress()<100)
         {

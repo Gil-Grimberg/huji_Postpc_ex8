@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 public class findRootsHolder {
 
@@ -55,13 +56,14 @@ public class findRootsHolder {
     public void addFinder(RootsFinder finder) {
         // todo: create a request
         OneTimeWorkRequest workRequest = new OneTimeWorkRequest.Builder(RootsFinderWorker.class)
-                .setInputData(new Data.Builder().putInt("input number", finder.getNumber()).build()).addTag("interesting")
+                .setInputData(new Data.Builder().putLong("input number", finder.getNumber()).build()).addTag("interesting")
                 .build();
+        finder.setId(workRequest.getId());
+        rootsFindersList.add(finder);
 
         WorkManager.getInstance(this.context).enqueue(workRequest);
 
-        finder.setId(workRequest.getId());
-        rootsFindersList.add(finder);
+
 //        Collections.sort(itemsList, new ToDoItemsCompartor());
 //        SharedPreferences.Editor editor = sp.edit();
 //        editor.putString(finder.getId(), finder.serializable());
@@ -80,6 +82,20 @@ public class findRootsHolder {
 //        editor.apply();
     }
 
+    public void updateFinder(RootsFinder finder)
+    {
+        UUID id = finder.getId();
+        for (RootsFinder rootsFinder:this.rootsFindersList)
+        {
+            if (rootsFinder.getId().equals(id))
+            {
+                this.rootsFindersList.remove(rootsFinder);
+                this.rootsFindersList.add(finder);
+                break;
+            }
+        }
+    }
+
     public void clear() {
         // todo: maybe need to cancel all workers? not sure
         rootsFindersList.clear();
@@ -87,7 +103,7 @@ public class findRootsHolder {
 
     public void addAll(List<RootsFinder> finders) {
         for (RootsFinder finder : finders) {
-            this.addFinder(finder);
+            this.rootsFindersList.add(finder);
         }
     }
 

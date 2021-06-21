@@ -24,22 +24,22 @@ public class RootsFinderWorker extends Worker {
     @Override
     public Result doWork() {
 
-        int number = getInputData().getInt("input data",1);
+        int number = getInputData().getInt("input number",1);
         String output = "number is prime";
         if (number==0 || number==1 || number==2)
         {
             return new Result.Success(new Data.Builder().putString("output",output).build());
         }
-        for (int i=2; i<number;i++)
+        for (Long i = 2L; i<number; i++)
         {
             if (number%i==0)
             {
-                output = String.valueOf(number/i) + "x" + String.valueOf("i");
+                output = String.valueOf(number/i) + "x" + String.valueOf(i);
                 return new Result.Success(new Data.Builder().putString("output",output).build());
             }
 
-            int progress = 100*(number/i);
-            setProgressAsync(new Data.Builder().putInt("progress",progress).build());
+            Long progress = 100*(i/number);
+            setProgressAsync(new Data.Builder().putLong("progress",progress).build());
 
         }
 
