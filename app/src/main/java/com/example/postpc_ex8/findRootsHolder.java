@@ -35,6 +35,7 @@ public class findRootsHolder {
     }
 
     private void initializeFromSp() {
+        //todo: implement this! and a comperator to do sorting!
 //        Set<String> toDoItems = sp.getAll().keySet();
 //        for (String key : toDoItems) {
 //            String itemStringFromSp = sp.getString(key,null);
@@ -54,7 +55,6 @@ public class findRootsHolder {
     }
 
     public void addFinder(RootsFinder finder) {
-        // todo: create a request
         OneTimeWorkRequest workRequest = new OneTimeWorkRequest.Builder(RootsFinderWorker.class)
                 .setInputData(new Data.Builder().putLong("input number", finder.getNumber()).build()).addTag("interesting")
                 .build();

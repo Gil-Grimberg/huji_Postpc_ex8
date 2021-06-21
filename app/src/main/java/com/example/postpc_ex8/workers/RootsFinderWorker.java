@@ -24,7 +24,7 @@ public class RootsFinderWorker extends Worker {
     @Override
     public Result doWork() {
 
-        int number = getInputData().getInt("input number",1);
+        Long number = getInputData().getLong("input number",1);
         String output = "number is prime";
         if (number==0 || number==1 || number==2)
         {
@@ -38,7 +38,7 @@ public class RootsFinderWorker extends Worker {
                 return new Result.Success(new Data.Builder().putString("output",output).build());
             }
 
-            Long progress = 100*(i/number);
+            Long progress = (100*i)/number;
             setProgressAsync(new Data.Builder().putLong("progress",progress).build());
 
         }

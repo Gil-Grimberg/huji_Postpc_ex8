@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
                     {
                         if (finder.getId().equals(workerId))
                         {
-                            Long total = progress.getLong("progress", 100);
+                            Long total = progress.getLong("progress", 0);
                             if (total != -1) {
                                 finder.setProgress(total);
 
