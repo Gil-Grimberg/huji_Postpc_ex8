@@ -36,7 +36,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         workManager = WorkManager.getInstance(this);
         if (holder == null) {
-//            holder = new TodoItemsHolderImpl();
             holder = findRootsApp.getInstance().getDataBase(); // replace the last row with this??
         }
 
@@ -62,8 +61,8 @@ public class MainActivity extends AppCompatActivity {
 
             }
             RootsFinder finder = new RootsFinder(number,"Calculating roots for",String.valueOf(number),0L);
-            holder.addFinder(finder);
-
+            holder.addFinder(finder,2L);
+            inputNumber.setText("");
             adapter.setRootsFinders(holder.getCurrentFinders());
         });
 //        workManager.cancelAllWorkByTag("interesting");
@@ -92,6 +91,13 @@ public class MainActivity extends AppCompatActivity {
                                 String output = workInfo.getOutputData().getString("output");
                                 finder.preffix = "Roots for " + finder.getNumber() + " are: ";
                                 finder.suffix = output;
+                            }
+                            else if(workInfo.getState().equals(WorkInfo.State.FAILED))
+                            {
+                                Long currentIteration = workInfo.getOutputData().getLong("i",2L);
+                                holder.deleteFinder(finder);
+                                // todo: create a new finder out of old finder and set the UUID id to workInfo.getId. than addFinder with currentIteration
+                                holder.addFinder();
                             }
                             holder.updateFinder(finder);
                             adapter.setRootsFinders(holder.getCurrentFinders());

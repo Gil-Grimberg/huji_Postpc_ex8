@@ -2,6 +2,7 @@ package com.example.postpc_ex8;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.provider.DocumentsContract;
 
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.LiveData;
@@ -36,16 +37,16 @@ public class findRootsHolder {
 
     private void initializeFromSp() {
         //todo: implement this! and a comperator to do sorting!
-//        Set<String> toDoItems = sp.getAll().keySet();
-//        for (String key : toDoItems) {
-//            String itemStringFromSp = sp.getString(key,null);
-//            TodoItem itemFromString = TodoItem.string_to_Item(itemStringFromSp); // make sure this static method works!
-//            if (itemFromString!=null){
-//                itemsList.add(itemFromString);
-//            }
-//
-//        }
-//        Collections.sort(itemsList, new ToDoItemsCompartor());
+        Set<String> rootsFinders = sp.getAll().keySet();
+        for (String key : rootsFinders) {
+            String rootsFinderStringFromSp = sp.getString(key,null);
+            RootsFinder rootsFinderFromString = RootsFinder.string_to_Item(rootsFinderStringFromSp); // make sure this static method works!
+            if (rootsFinderFromString!=null){
+                rootsFindersList.add(rootsFinderFromString);
+            }
+
+        }
+        Collections.sort(rootsFindersList, new RootsFinderComparator());
 //        toDoItemsLiveDataMutable.setValue(new ArrayList<TodoItem>(itemsList));
     }
 
@@ -54,17 +55,19 @@ public class findRootsHolder {
         return new ArrayList<>(rootsFindersList);
     }
 
-    public void addFinder(RootsFinder finder) {
+    public void addFinder(RootsFinder finder,Long calcIteration) {
         OneTimeWorkRequest workRequest = new OneTimeWorkRequest.Builder(RootsFinderWorker.class)
-                .setInputData(new Data.Builder().putLong("input number", finder.getNumber()).build()).addTag("interesting")
+                .setInputData(new Data.Builder().putLong("input number", finder.getNumber()).putLong("i",calcIteration).build()).addTag("interesting")
                 .build();
         finder.setId(workRequest.getId());
         rootsFindersList.add(finder);
-
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putString(String.valueOf(finder.getId()), finder.serializable());
+        editor.apply();
         WorkManager.getInstance(this.context).enqueue(workRequest);
 
 
-//        Collections.sort(itemsList, new ToDoItemsCompartor());
+        Collections.sort(rootsFindersList, new RootsFinderComparator());
 //        SharedPreferences.Editor editor = sp.edit();
 //        editor.putString(finder.getId(), finder.serializable());
 //        editor.apply();
@@ -74,9 +77,12 @@ public class findRootsHolder {
         if (finder == null) return;
         WorkManager.getInstance(this.context).cancelWorkById(finder.getId());
         rootsFindersList.remove(finder);
+        SharedPreferences.Editor editor = sp.edit();
+        editor.remove(String.valueOf(finder.getId()));
+        editor.apply();
         // todo: delete\cancel a request
 
-//        Collections.sort(itemsList, new ToDoItemsCompartor());
+        Collections.sort(rootsFindersList, new RootsFinderComparator());
 //        SharedPreferences.Editor editor = sp.edit();
 //        editor.remove(finder.getId());
 //        editor.apply();
@@ -91,6 +97,10 @@ public class findRootsHolder {
             {
                 this.rootsFindersList.remove(rootsFinder);
                 this.rootsFindersList.add(finder);
+                SharedPreferences.Editor editor = sp.edit();
+                editor.remove(String.valueOf(rootsFinder.getId()));
+                editor.putString(String.valueOf(finder.getId()),finder.serializable());
+                editor.apply();
                 break;
             }
         }
@@ -98,13 +108,26 @@ public class findRootsHolder {
 
     public void clear() {
         // todo: maybe need to cancel all workers? not sure
+        SharedPreferences.Editor editor = sp.edit();
+        for (int i = 0; i < rootsFindersList.size(); i++) {
+            editor.remove(String.valueOf(rootsFindersList.get(i).getId()));
+        }
+        editor.apply();
         rootsFindersList.clear();
     }
 
     public void addAll(List<RootsFinder> finders) {
+        if (!rootsFindersList.isEmpty())
+        {
+            rootsFindersList.clear();
+        }
+        SharedPreferences.Editor editor = sp.edit();
         for (RootsFinder finder : finders) {
             this.rootsFindersList.add(finder);
+            editor.putString(String.valueOf(finder.getId()),finder.serializable());
         }
+        editor.apply();
+        Collections.sort(rootsFindersList, new RootsFinderComparator());
     }
 
     public int size() {

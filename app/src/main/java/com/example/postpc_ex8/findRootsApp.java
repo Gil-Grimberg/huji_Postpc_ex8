@@ -1,6 +1,10 @@
 package com.example.postpc_ex8;
 
 import android.app.Application;
+import android.content.Context;
+import android.content.SharedPreferences;
+
+import java.util.Set;
 
 public class findRootsApp extends Application {
 
@@ -14,7 +18,6 @@ public class findRootsApp extends Application {
     public static findRootsApp getInstance(){
         return instance;
     }
-
     @Override
     public void onCreate()
     {
@@ -23,4 +26,5 @@ public class findRootsApp extends Application {
         instance = this;
         dataBase = new findRootsHolder(this);
     }
+
 }
