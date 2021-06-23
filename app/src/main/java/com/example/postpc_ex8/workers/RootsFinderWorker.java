@@ -30,7 +30,6 @@ public class RootsFinderWorker extends Worker {
     @NotNull
     @Override
     public Result doWork() {
-        // todo: save the calculation after several min (10?) and store it so i can relaunch it on resume (and return Retry?)
         Instant start = Instant.now();
         Long number = getInputData().getLong("input number",1L);
         Long calcIteration = getInputData().getLong("i",2L);
@@ -47,9 +46,9 @@ public class RootsFinderWorker extends Worker {
                 output = String.valueOf(number/calcIteration) + "x" + String.valueOf(calcIteration);
                 return new Result.Success(new Data.Builder().putString("output",output).build());
             }
-            if (Duration.between(start,Instant.now()).toMinutes()>=10)
-                // todo: save i to a sp
-                return new Result.Failure(); //todo: send i with the Failure, delete corresponding finder and start a new worker
+            long duration = Duration.between(start,Instant.now()).toMinutes();
+            if (duration>=10)
+                return new Result.Failure(new Data.Builder().putLong("i",calcIteration).build());
 
             Long progress = (100*calcIteration)/number;
             calcIteration++;

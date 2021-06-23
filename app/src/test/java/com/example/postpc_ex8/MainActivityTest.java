@@ -1,73 +1,82 @@
 package com.example.postpc_ex8;
 
 import android.view.View;
+import android.view.animation.RotateAnimation;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+
+import androidx.constraintlayout.utils.widget.MockView;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.work.WorkInfo;
+import androidx.work.WorkManager;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.common.util.concurrent.ListenableFuture;
 
 import junit.framework.TestCase;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runner.manipulation.Ordering;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+
+import java.util.UUID;
+
+import static org.mockito.Mockito.*;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 28)
 public class MainActivityTest extends TestCase {
 
     @Test
-    public void when_activityIsLaunching_then_theButtonShouldStartDisabled(){
+    public void when_addingCalculation_then_newRootFinderIsCreated(){
         // create a MainActivity and let it think it's currently displayed on the screen
         MainActivity mainActivity = Robolectric.buildActivity(MainActivity.class).create().visible().get();
+        findRootsHolder holder = mainActivity.holder;
+        FloatingActionButton button = mainActivity.findViewById(R.id.buttonCalculateRoots);
+        EditText input = mainActivity.findViewById(R.id.insertNumber);
+        input.setText("12");
+        assertEquals(holder.size(),0);
+        button.performClick();
 
-        // test: make sure that the "calculate" button is disabled
-        Button button = mainActivity.findViewById(R.id.buttonCalculateRoots);
-        assertFalse(button.isEnabled());
+        assertEquals(holder.size(),1);
+        RootsFinder savedFinder = holder.getCurrentFinders().get(0);
+        long number = savedFinder.getNumber();
+        assertEquals(number,12L);
     }
 
     @Test
-    public void when_activityIsLaunching_then_theEditTextShouldStartEmpty(){
+    public void when_addingCalculation_then_workerIsCreated(){
         // create a MainActivity and let it think it's currently displayed on the screen
         MainActivity mainActivity = Robolectric.buildActivity(MainActivity.class).create().visible().get();
+        findRootsHolder holder = mainActivity.holder;
+        WorkManager workManager = mainActivity.workManager;
+        FloatingActionButton button = mainActivity.findViewById(R.id.buttonCalculateRoots);
+        EditText input = mainActivity.findViewById(R.id.insertNumber);
+        input.setText("12");
+        button.performClick();
 
-        // test: make sure that the "input" edit-text has no text
-        EditText inputEditText = mainActivity.findViewById(R.id.editTextInputNumber);
-        String input = inputEditText.getText().toString();
-        assertTrue(input == null || input.isEmpty());
+        UUID rootFinderId = holder.getCurrentFinders().get(0).getId();
+        assertNotNull(workManager.getWorkInfoById(rootFinderId));
     }
 
     @Test
-    public void when_userIsEnteringNumberInput_and_noCalculationAlreadyHappned_then_theButtonShouldBeEnabled(){
-        // create a MainActivity and let it think it's currently displayed on the screen
+    public void when_deletingCalculation_than_rootFinderIsDeletedFromHolder()
+    {
         MainActivity mainActivity = Robolectric.buildActivity(MainActivity.class).create().visible().get();
-
-        // find the edit-text and the button
-        EditText inputEditText = mainActivity.findViewById(R.id.editTextInputNumber);
-        Button button = mainActivity.findViewById(R.id.buttonCalculateRoots);
-
-        // test: insert input to the edit text and verify that the button is enabled
-        // TODO: implement
-        inputEditText.setText("16");
-        assertTrue(button.isEnabled());
-    }
-
-    @Test
-    public void when_userInsertInput_andDeletingIt_then_buttonShouldBeEnabledandThenDisabled(){
-        // create a MainActivity and let it think it's currently displayed on the screen
-        MainActivity mainActivity = Robolectric.buildActivity(MainActivity.class).create().visible().get();
-
-        // find the edit-text, the button and the progressBar
-        EditText inputEditText = mainActivity.findViewById(R.id.editTextInputNumber);
-        Button button = mainActivity.findViewById(R.id.buttonCalculateRoots);
-        ProgressBar progressBar = mainActivity.findViewById(R.id.progressBar);
-        // test: insert input to the edit text, click button and verify progressBar is displayed
-        // TODO: implement
-        inputEditText.setText("1");
-        assertTrue(button.isEnabled());
-        inputEditText.setText("");
-        assertFalse(button.isEnabled());
+        findRootsHolder holder = mainActivity.holder;
+        WorkManager workManager = mainActivity.workManager;
+        FloatingActionButton button = mainActivity.findViewById(R.id.buttonCalculateRoots);
+        EditText input = mainActivity.findViewById(R.id.insertNumber);
+        input.setText("35317");
+        button.performClick();
+        RootsFinder rootsFinder = holder.getCurrentFinders().get(0);
+        assertEquals(holder.size(),1);
+        holder.deleteFinder(rootsFinder);
+        assertEquals(holder.size(),0);
 
     }
 

@@ -22,7 +22,6 @@ public class findRootsApp extends Application {
     public void onCreate()
     {
         super.onCreate();
-        // todo: dealing with workers, create a worker class and define the calculation there
         instance = this;
         dataBase = new findRootsHolder(this);
     }

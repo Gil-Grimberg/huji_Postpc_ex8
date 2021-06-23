@@ -7,6 +7,7 @@ import android.provider.DocumentsContract;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
+import androidx.work.Configuration;
 import androidx.work.Data;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkInfo;
@@ -24,19 +25,30 @@ public class findRootsHolder {
 
     ArrayList<RootsFinder> rootsFindersList = new ArrayList<>();
     private final Context context;
-    private SharedPreferences sp; //todo: needed? yes
+    private SharedPreferences sp;
     WorkManager workManager;
 
 
     public findRootsHolder(Context context) {
         this.context = context;
         this.sp = context.getSharedPreferences("local_db", Context.MODE_PRIVATE);
-        workManager = WorkManager.getInstance(context);
+        if (this.workManager==null)
+        {
+            try {
+                Configuration config = new Configuration.Builder().build();
+                WorkManager.initialize(context.getApplicationContext(), config);
+                workManager = WorkManager.getInstance(context);
+            }
+            catch (Exception e)
+            {
+                workManager = WorkManager.getInstance(context);
+
+            }
+        }
         initializeFromSp();
     }
 
     private void initializeFromSp() {
-        //todo: implement this! and a comperator to do sorting!
         Set<String> rootsFinders = sp.getAll().keySet();
         for (String key : rootsFinders) {
             String rootsFinderStringFromSp = sp.getString(key,null);
@@ -80,7 +92,6 @@ public class findRootsHolder {
         SharedPreferences.Editor editor = sp.edit();
         editor.remove(String.valueOf(finder.getId()));
         editor.apply();
-        // todo: delete\cancel a request
 
         Collections.sort(rootsFindersList, new RootsFinderComparator());
 //        SharedPreferences.Editor editor = sp.edit();
@@ -107,7 +118,6 @@ public class findRootsHolder {
     }
 
     public void clear() {
-        // todo: maybe need to cancel all workers? not sure
         SharedPreferences.Editor editor = sp.edit();
         for (int i = 0; i < rootsFindersList.size(); i++) {
             editor.remove(String.valueOf(rootsFindersList.get(i).getId()));

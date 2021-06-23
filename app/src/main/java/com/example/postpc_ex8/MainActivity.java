@@ -48,7 +48,6 @@ public class MainActivity extends AppCompatActivity {
         EditText inputNumber = findViewById(R.id.insertNumber);
         FloatingActionButton findRootsButton = findViewById(R.id.buttonCalculateRoots);
         findRootsButton.setOnClickListener(v->{
-            // todo: check validity of the number
             // than create a new worker and RootsFinder
             Long number;
             try{
@@ -83,8 +82,6 @@ public class MainActivity extends AppCompatActivity {
                             Long total = progress.getLong("progress", 0);
                             if (total != -1) {
                                 finder.setProgress(total);
-
-                                //todo: maybe delete the finder from the holder and create a new one with updated params
                             }
                             if (workInfo.getState().equals(WorkInfo.State.SUCCEEDED)) {
                                 finder.setProgress(100L);
@@ -96,8 +93,13 @@ public class MainActivity extends AppCompatActivity {
                             {
                                 Long currentIteration = workInfo.getOutputData().getLong("i",2L);
                                 holder.deleteFinder(finder);
-                                // todo: create a new finder out of old finder and set the UUID id to workInfo.getId. than addFinder with currentIteration
-                                holder.addFinder();
+                                Long num = finder.getNumber();
+                                String pre =finder.getPreffix();
+                                String suff = finder.getSuffix();
+                                Long progressState = finder.getProgress();
+                                UUID finderId = workInfo.getId();
+                                RootsFinder newFinder = new RootsFinder(num,pre,suff,progressState,finderId);
+                                holder.addFinder(newFinder,currentIteration);
                             }
                             holder.updateFinder(finder);
                             adapter.setRootsFinders(holder.getCurrentFinders());

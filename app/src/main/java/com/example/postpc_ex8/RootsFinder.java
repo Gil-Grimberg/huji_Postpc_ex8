@@ -14,21 +14,20 @@ public class RootsFinder implements Serializable {
 
 
     public RootsFinder() {
-        // todo: is it necessary? because of serelaizblity???
     }
 
     public RootsFinder(Long num, String pre, String suff, Long progressState) {
         number = num;
         preffix = pre;
         suffix = suff;
-        progress = progressState; //todo: maybe update this from worker?
+        progress = progressState;
     }
 
     public RootsFinder(Long num, String pre, String suff, Long progressState, UUID finderId) {
         number = num;
         preffix = pre;
         suffix = suff;
-        progress = progressState; //todo: maybe update this from worker?
+        progress = progressState;
         id = finderId;
     }
 
